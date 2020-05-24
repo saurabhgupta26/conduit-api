@@ -4,14 +4,21 @@ var slug = require('slug');
 
 var commentSchema = new Schema (
     {
-        comment : {
-            body: String,
-            author : {
-                type: Schema.Types.ObjectId,
-                ref: "User",
-                required: true
-            }
+        body : {
+            type: String,
+            required: true
+        },
+        author : {
+            type: Schema.Types.ObjectId,
+            ref: "User",
+            required: true
+        },
+        article: {
+            type: Schema.Types.ObjectId,
+            ref: 'Article'
         }
+        }, {
+        timestamps: true
     }
 )
 
