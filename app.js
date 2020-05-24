@@ -9,6 +9,7 @@ var slug = require('slug');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var articlesRouter = require('./routes/articles');
+var commentsRouter = require('./routes/comments');
 
 mongoosse.connect(
     "mongodb://localhost/jwt-auth",
@@ -30,6 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/articles', articlesRouter);
+app.use('/api/articles', commentsRouter);
 
 /// catch 404 and forwarding to error handler
 // app.use(function(req, res, next) {

@@ -29,7 +29,9 @@ var articleSchema = new Schema (
         }],
         favouritesCount :{
             type : Number,
-            default : 0
+            default : 0,
+            min: 0
+
         },
         author : {
             type : Schema.Types.ObjectId,
