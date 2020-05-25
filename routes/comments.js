@@ -41,6 +41,7 @@ router.delete("/:slug/comments/:id", auth.verifyToken, async function (req, res,
   try {
     // console.log(req.params.slug, "slug");
     var findArticle = await Article.findOneAndUpdate({ slug: req.params.slug }, {$pull: {comment : req.params.id}}, {new: true});
+    
     var deleteComment = await Comment.findByIdAndDelete(req.params.id);
     res.json({success : true, findArticle});
   } catch (error) {

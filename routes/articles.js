@@ -64,7 +64,10 @@ router.get("/:slug/", async function (req, res, next) {
 router.put("/:slug/", auth.verifyToken, async function (req, res, next) {
   try {
     // console.log(req.params.slug, "slug");
-    var article = await Article.findOneAndUpdate({ slug: req.params.slug }, req.body.article);
+    var article = await Article.findOneAndUpdate(
+      { slug: req.params.slug },
+      req.body.article
+    );
     var article = await Article.findById(article.id).populate(
       "author",
       "username bio description image"
@@ -91,60 +94,127 @@ router.delete("/:slug/", auth.verifyToken, async function (req, res, next) {
   try {
     // console.log(req.params.slug, "slug");
     var article = await Article.findOneAndDelete({ slug: req.params.slug });
-    res.json({success : true});
+    res.json({ success: true });
   } catch (error) {
     next(error);
   }
 });
 
 // FAVOURITE ARTICLE
-router.post('/:slug/favorite/', auth.verifyToken, async function(req, res, next) {
-    try {
-      var favourited = await Article.findOneAndUpdate({slug: req.params.slug}, {$addToSet: {favourited : req.user.userId}, $inc : {favouritesCount : 1}}, {new: true});
-      var favourited = await Article.findById(favourited.id)
-      .populate("author", "username bio description image");
-      
-      console.log(favourited, "Article");
-      res.status(200).json({
-        article: {
-            slug: req.params.slug,
-            title: favourited.title,
-            description: favourited.description,
-            body: favourited.body,
-            tagList: favourited.tagList,
-            favourited : true,
-            favouritesCount : favourited.favouritesCount,
-            author: favourited.author
-        }
-      });
-    } catch (error) {
-        next(error);
-    }
-  });
+router.post("/:slug/favorite/", auth.verifyToken, async function (
+  req,
+  res,
+  next
+) {
+  try {
+    var favourited = await Article.findOneAndUpdate(
+      { slug: req.params.slug },
+      {
+        $addToSet: { favourited: req.user.userId },
+        $inc: { favouritesCount: 1 },
+      },
+      { new: true }
+    );
+    var favourited = await Article.findById(favourited.id).populate(
+      "author",
+      "username bio description image"
+    );
 
-  // UNFAVOURITE AN ARTICLE
-  
-  router.delete('/:slug/favorite/', auth.verifyToken, async function(req, res, next) {
-    try {
-      var favourited = await Article.findOneAndUpdate({slug: req.params.slug}, {$pull: {favourited : req.user.userId}, $inc : {favouritesCount : -1}}, {new: true});
-      var favourited = await Article.findById(favourited.id)
-      .populate("author", "username bio description image");
-      console.log(favourited, "Article");
-      res.status(200).json({
-        article: {
-            slug: req.params.slug,
-            title: favourited.title,
-            description: favourited.description,
-            body: favourited.body,
-            tagList: favourited.tagList,
-            favourited : true,
-            favouritesCount : favourited.favouritesCount,
-            author: favourited.author
-        }
+    console.log(favourited, "Article");
+    res.status(200).json({
+      article: {
+        slug: req.params.slug,
+        title: favourited.title,
+        description: favourited.description,
+        body: favourited.body,
+        tagList: favourited.tagList,
+        favourited: true,
+        favouritesCount: favourited.favouritesCount,
+        author: favourited.author,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// UNFAVOURITE AN ARTICLE
+
+router.delete("/:slug/favorite/", auth.verifyToken, async function (
+  req,
+  res,
+  next
+) {
+  try {
+    var favourited = await Article.findOneAndUpdate(
+      { slug: req.params.slug },
+      { $pull: { favourited: req.user.userId }, $inc: { favouritesCount: -1 } },
+      { new: true }
+    );
+    var favourited = await Article.findById(favourited.id).populate(
+      "author",
+      "username bio description image"
+    );
+    console.log(favourited, "Article");
+    res.status(200).json({
+      article: {
+        slug: req.params.slug,
+        title: favourited.title,
+        description: favourited.description,
+        body: favourited.body,
+        tagList: favourited.tagList,
+        favourited: true,
+        favouritesCount: favourited.favouritesCount,
+        author: favourited.author,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// FIND ARTICLES BY TAG
+
+router.get("/", async function (req, res, next) {
+  try {
+    if (req.query.tagList) {
+      let article = await Article.find({
+        tagList: req.query.tagList,
+      }).populate("author", "username bio description image");
+      console.log(article, "coming or not");
+      res.json({ success: true, article });
+    } 
+
+    else if (req.query.author) {
+      let user = await User.find({username: req.query.author });
+      console.log(user, "USER FOUND");
+
+      if(user) {
+      let article = await Article.find({
+        username: user.id})
+        .populate("author", "username bio description image");
+      console.log(article, "coming or not");
+      res.json({ success: true, article });
+    } 
+  } else if(req.query.favourited) {
+      let user = await User.find({username : req.query.favourited });
+      console.log(user, "FAV USER");
+      if(user) {
+        let article = await Article.find({
+          username : user.id })
+          .populate("author", "username bio description image");
+          res.json({success : true, article});
+      }
+    } else {
+      res.json({
+        success: false,
+        message: "author/tag not found",
       });
-    } catch (error) {
-        next(error);
     }
-  });
+ } catch (error) {
+    next(error);
+  }
+});
+
 
 module.exports = router;
