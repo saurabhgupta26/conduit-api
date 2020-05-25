@@ -193,16 +193,20 @@ router.get("/", async function (req, res, next) {
       let article = await Article.find({
         username: user.id})
         .populate("author", "username bio description image");
-      console.log(article, "coming or not");
+      console.log(article, "coming");
       res.json({ success: true, article });
     } 
   } else if(req.query.favourited) {
-      let user = await User.find({username : req.query.favourited });
-      console.log(user, "FAV USER");
+      let user = await User.findOne({username : req.query.favourited });
+      // let userInfo = user.filter(x => {
+      //   console.log( !(x.id, "FAV USER"));
+      // });
+      console.log(user.id, "info");
       if(user) {
         let article = await Article.find({
-          username : user.id })
+          favourited : user.id })
           .populate("author", "username bio description image");
+          console.log(article, "coming");
           res.json({success : true, article});
       }
     } else {
