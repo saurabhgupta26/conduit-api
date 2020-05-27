@@ -32,6 +32,22 @@ router.post("/", auth.verifyToken, async function (req, res, next) {
   }
 });
 
+// GET THE FEED OF ARTICLES
+router.get("/feed/", auth.verifyToken, async function (req, res, next) {
+  try {
+    var user = await User.findById(req.user.userId);
+    console.log(user);
+    let feed = await Article.find({ author: { $in: user.following } })
+      .sort({ updatedAt: -1 })
+      .limit(3)
+      .populate("author", "username bio description image");
+    console.log(feed, "FEED ARTICLE");
+    res.json({ feed });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // GET ARTICLE
 
 router.get("/:slug/", async function (req, res, next) {
@@ -183,31 +199,29 @@ router.get("/", async function (req, res, next) {
       }).populate("author", "username bio description image");
       console.log(article, "coming or not");
       res.json({ success: true, article });
-    } 
-
-    else if (req.query.author) {
-      let user = await User.find({username: req.query.author });
+    } else if (req.query.author) {
+      let user = await User.find({ username: req.query.author });
       console.log(user, "USER FOUND");
 
-      if(user) {
-      let article = await Article.find({
-        username: user.id})
-        .populate("author", "username bio description image");
-      console.log(article, "coming");
-      res.json({ success: true, article });
-    } 
-  } else if(req.query.favourited) {
-      let user = await User.findOne({username : req.query.favourited });
+      if (user) {
+        let article = await Article.find({
+          username: user.id,
+        }).populate("author", "username bio description image");
+        console.log(article, "coming");
+        res.json({ success: true, article });
+      }
+    } else if (req.query.favourited) {
+      let user = await User.findOne({ username: req.query.favourited });
       // let userInfo = user.filter(x => {
       //   console.log( !(x.id, "FAV USER"));
       // });
       console.log(user.id, "info");
-      if(user) {
+      if (user) {
         let article = await Article.find({
-          favourited : user.id })
-          .populate("author", "username bio description image");
-          console.log(article, "coming");
-          res.json({success : true, article});
+          favourited: user.id,
+        }).populate("author", "username bio description image");
+        console.log(article, "coming");
+        res.json({ success: true, article });
       }
     } else {
       res.json({
@@ -215,10 +229,9 @@ router.get("/", async function (req, res, next) {
         message: "author/tag not found",
       });
     }
- } catch (error) {
+  } catch (error) {
     next(error);
   }
 });
-
 
 module.exports = router;
